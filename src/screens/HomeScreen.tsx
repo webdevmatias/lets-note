@@ -1,112 +1,64 @@
-// src/screens/HomeScreen.tsx
+import React from "react";
+import {
+  View,
+  Pressable,
+  Text,
+  Alert,
+  FlatList,
+  ListRenderItem,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-import React, { useMemo, useState } from 'react';
-import { View, Pressable, Text, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import * as DocumentPicker from "expo-document-picker";
 
-import * as FileSystem from 'expo-file-system/legacy';
-import * as Sharing from 'expo-sharing';
-import * as DocumentPicker from 'expo-document-picker';
+import { RootStackParamList } from "../navigation/RootNavigator";
+import { tarefasToCsv, csvToTarefas } from "../lib/csv";
 
-import { RootStackParamList } from '../navigation/RootNavigator';
-import { useMListStore } from '../store/useMListStore';
-import { tarefasToCsv, csvToTarefas } from '../lib/csv';
+import ProjetoSection from "../components/home/ProjetoSection";
+import FabMenu from "../components/home/FabMenu";
+import AppHeader from "../components/layout/AppHeader";
+import CalendarioTarefas from "../components/calendar/CalendarioTarefas";
+import TarefaItem from "../components/home/TarefaItem";
 
-import ProjetoSection from '../components/home/ProjetoSection';
-import TaskSection from '../components/home/TarefaSection';
-import FabMenu from '../components/home/FabMenu';
-import AppHeader from '../components/layout/AppHeader';
-import CalendarioTarefas from '../components/calendar/CalendarioTarefas';
+import { Tarefa } from "../types";
+import {
+  useHomeScreenData,
+  FiltroProjetos,
+  FiltroTarefas,
+} from "../hooks/useHomeScreenData";
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-type FiltroTarefas = 'ativas' | 'concluidas';
-type FiltroProjetos = 'ativos' | 'concluidos';
+type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  const projetos = useMListStore((s) => s.projetos);
-  const tarefas = useMListStore((s) => s.tarefas);
-  const alternarConcluida = useMListStore((s) => s.alternarConcluida);
-  const adicionarTarefa = useMListStore((s) => s.adicionarTarefa);
+  const {
+    projetos,
+    tarefas,
+    alternarConcluida,
+    adicionarTarefa,
+    dataFiltro,
+    setDataFiltro,
+    filtroTarefas,
+    setFiltroTarefas,
+    filtroProjetos,
+    setFiltroProjetos,
+    tarefasVisiveis,
+    projetosVisiveis,
+  } = useHomeScreenData();
 
-  const [dataFiltro, setDataFiltro] = useState<string | undefined>(undefined);
-  const [filtroTarefas, setFiltroTarefas] = useState<FiltroTarefas>('ativas');
-  const [filtroProjetos, setFiltroProjetos] = useState<FiltroProjetos>('ativos');
-
-  // ====== TAREFAS ======
-  const tarefasOrdenadas = useMemo(
-    () =>
-      [...tarefas].sort((a, b) => {
-        if (a.concluida === b.concluida) return 0;
-        return a.concluida ? 1 : -1;
-      }),
-    [tarefas]
-  );
-
-  const tarefasFiltradasPorData = useMemo(
-    () =>
-      dataFiltro
-        ? tarefas.filter(
-            (t) => t.dataLimite && t.dataLimite.slice(0, 10) === dataFiltro.slice(0, 10)
-          )
-        : tarefas,
-    [tarefas, dataFiltro]
-  );
-
-  const tarefasAtivas = useMemo(
-    () => tarefasOrdenadas.filter((t) => !t.concluida),
-    [tarefasOrdenadas]
-  );
-
-  const tarefasConcluidas = useMemo(
-    () => tarefasOrdenadas.filter((t) => t.concluida),
-    [tarefasOrdenadas]
-  );
-
-  const tarefasVisiveis = filtroTarefas === 'ativas' ? tarefasAtivas : tarefasConcluidas;
-
-  // ====== PROJETOS (ATIVOS x CONCLUÍDOS) ======
-  const projetosComStatus = useMemo(
-    () =>
-      projetos.map((p) => {
-        const tarefasDoProjeto = tarefas.filter((t) => t.projetoId === p.id);
-        const temTarefas = tarefasDoProjeto.length > 0;
-        const todasConcluidas = temTarefas && tarefasDoProjeto.every((t) => t.concluida);
-
-        return {
-          projeto: p,
-          concluido: todasConcluidas,
-        };
-      }),
-    [projetos, tarefas]
-  );
-
-  const projetosAtivos = useMemo(
-    () => projetosComStatus.filter((p) => !p.concluido).map((p) => p.projeto),
-    [projetosComStatus]
-  );
-
-  const projetosConcluidos = useMemo(
-    () => projetosComStatus.filter((p) => p.concluido).map((p) => p.projeto),
-    [projetosComStatus]
-  );
-
-  const projetosVisiveis = filtroProjetos === 'ativos' ? projetosAtivos : projetosConcluidos;
-
-  // ====== AÇÕES ======
-  const handleNovaTarefa = () => navigation.navigate('Edit', { mode: 'task' });
-
-  const handleNovoProjeto = () => navigation.navigate('Edit', { mode: 'project' });
-
+  // ====== AÇÕES DE CSV ======
   const handleExportar = async () => {
     try {
       const csv = tarefasToCsv(tarefas, projetos);
 
       const baseDir =
-        (FileSystem as any).documentDirectory ?? (FileSystem as any).cacheDirectory ?? '';
+        (FileSystem as any).documentDirectory ??
+        (FileSystem as any).cacheDirectory ??
+        "";
 
-      const fileUri = baseDir + 'letsnote-tarefas.csv';
+      const fileUri = baseDir + "letsnote-tarefas.csv";
 
       await FileSystem.writeAsStringAsync(fileUri, csv);
 
@@ -114,26 +66,29 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
       if (!canShare) {
         Alert.alert(
-          'Exportação CSV',
+          "Exportação CSV",
           `Arquivo salvo em:\n${fileUri}\n\nSeu dispositivo não suporta o painel de compartilhamento.`
         );
         return;
       }
 
       await Sharing.shareAsync(fileUri, {
-        mimeType: 'text/csv',
-        dialogTitle: 'Exportar tarefas como CSV',
+        mimeType: "text/csv",
+        dialogTitle: "Exportar tarefas como CSV",
       });
     } catch (err) {
       console.error(err);
-      Alert.alert('Erro', 'Não foi possível exportar o CSV. Tente novamente mais tarde.');
+      Alert.alert(
+        "Erro",
+        "Não foi possível exportar o CSV. Tente novamente mais tarde."
+      );
     }
   };
 
   const handleImportar = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: 'text/*',
+        type: "text/*",
         copyToCacheDirectory: true,
       });
 
@@ -147,7 +102,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       const tarefasBase = csvToTarefas(csv);
 
       if (tarefasBase.length === 0) {
-        Alert.alert('Importação CSV', 'Nenhuma tarefa encontrada no arquivo.');
+        Alert.alert(
+          "Importação CSV",
+          "Nenhuma tarefa encontrada no arquivo."
+        );
         return;
       }
 
@@ -156,125 +114,170 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           titulo: t.titulo,
           descricao: t.descricao,
           projetoId: t.projetoId,
-          prioridade: t.prioridade ?? 'media',
+          prioridade: t.prioridade ?? "media",
           dataLimite: t.dataLimite,
         });
       });
 
-      Alert.alert('Importação CSV', `Importadas ${tarefasBase.length} tarefas do arquivo.`);
+      Alert.alert(
+        "Importação CSV",
+        `Importadas ${tarefasBase.length} tarefas do arquivo.`
+      );
     } catch (err) {
       console.error(err);
       Alert.alert(
-        'Erro',
-        'Não foi possível importar o CSV. Verifique o arquivo e tente novamente.'
+        "Erro",
+        "Não foi possível importar o CSV. Verifique o arquivo e tente novamente."
       );
     }
   };
 
-  return (
-    <SafeAreaView className="min-h-screen flex-1 bg-neutral-950">
-      <AppHeader title="" reverse />
+  // ====== NAVEGAÇÃO ======
+  const handleNovaTarefa = () =>
+    navigation.navigate("Edit", { mode: "task" });
 
-      <View className="flex-1 px-4">
-        {/* CALENDÁRIO DE TAREFAS */}
-        <View className="flex justify-center">
-          <CalendarioTarefas
-            tarefas={tarefas}
-            selectedDate={dataFiltro}
-            onChangeSelectedDate={setDataFiltro}
-          />
-        </View>
+  const handleNovoProjeto = () =>
+    navigation.navigate("Edit", { mode: "project" });
 
-        {/* PROJETOS */}
-        <Text className="mb-2 text-xl font-semibold text-white">Meus Projetos:</Text>
+  // ====== RENDER TAREFA (ITEM DA LISTA) ======
+  const renderTarefa: ListRenderItem<Tarefa> = ({ item }) => {
+    const projeto = projetos.find((p) => p.id === item.projetoId);
 
-        {/* Filtro de projetos: ATIVOS / CONCLUÍDOS */}
-        <View className="mb-4">
-          <View className="flex-row rounded-full bg-neutral-900 p-1">
-            <Pressable
-              onPress={() => setFiltroProjetos('ativos')}
-              className={`flex-1 items-center rounded-full px-3 py-2 ${
-                filtroProjetos === 'ativos' ? 'bg-blue-600' : ''
-              }`}>
-              <Text
-                className={
-                  filtroProjetos === 'ativos'
-                    ? 'text-xs font-semibold text-white'
-                    : 'text-xs text-neutral-300'
-                }>
-                PROJETOS ATIVOS
-              </Text>
-            </Pressable>
+    return (
+      <TarefaItem
+        tarefa={item}
+        projeto={projeto}
+        onPress={() =>
+          navigation.navigate("TarefaDetalhe", { id: item.id })
+        }
+        onToggleConcluida={() => alternarConcluida(item.id)}
+      />
+    );
+  };
 
-            <Pressable
-              onPress={() => setFiltroProjetos('concluidos')}
-              className={`flex-1 items-center rounded-full px-3 py-2 ${
-                filtroProjetos === 'concluidos' ? 'bg-blue-600' : ''
-              }`}>
-              <Text
-                className={
-                  filtroProjetos === 'concluidos'
-                    ? 'text-xs font-semibold text-white'
-                    : 'text-xs text-neutral-300'
-                }>
-                PROJETOS CONCLUÍDOS
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <ProjetoSection
-          projetos={projetosVisiveis}
+  // ====== HEADER DA LISTA (calendário + filtros + projetos + título tarefas) ======
+  const renderHeader = () => (
+    <View className="px-4">
+      {/* CALENDÁRIO */}
+      <View className="">
+        <CalendarioTarefas
           tarefas={tarefas}
-          onPressProjeto={(id) => navigation.navigate('ProjetoDetalhe', { id })}
-        />
-
-        {/* TAREFAS */}
-        <Text className="mb-2 text-xl font-semibold text-white">Minhas Tarefas:</Text>
-
-        {/* Filtro de tarefas: ATIVAS / CONCLUÍDAS */}
-        <View className="mb-2">
-          <View className="flex-row rounded-full bg-neutral-900 p-1">
-            <Pressable
-              onPress={() => setFiltroTarefas('ativas')}
-              className={`flex-1 items-center rounded-full px-3 py-2 ${
-                filtroTarefas === 'ativas' ? 'bg-blue-600' : ''
-              }`}>
-              <Text
-                className={
-                  filtroTarefas === 'ativas'
-                    ? 'text-xs font-semibold text-white'
-                    : 'text-xs text-neutral-300'
-                }>
-                TAREFAS ATIVAS
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => setFiltroTarefas('concluidas')}
-              className={`flex-1 items-center rounded-full px-3 py-2 ${
-                filtroTarefas === 'concluidas' ? 'bg-blue-600' : ''
-              }`}>
-              <Text
-                className={
-                  filtroTarefas === 'concluidas'
-                    ? 'text-xs font-semibold text-white'
-                    : 'text-xs text-neutral-300'
-                }>
-                TAREFAS CONCLUÍDAS
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* TaskSection cuida da rolagem via FlatList */}
-        <TaskSection
-          tarefas={tarefasVisiveis}
-          projetos={projetos}
-          onPressTarefa={(id) => navigation.navigate('TarefaDetalhe', { id })}
-          onToggleConcluida={alternarConcluida}
+          selectedDate={dataFiltro}
+          onChangeSelectedDate={setDataFiltro}
         />
       </View>
+
+      {/* PROJETOS */}
+      <Text className="mb-4 text-center text-xl font-semibold text-white border-y border-white/10 py-4">
+        Meus Projetos:
+      </Text>
+
+      {/* Filtro de projetos */}
+      <View className="mb-4">
+        <View className="flex-row rounded-full bg-neutral-900 p-1">
+          <Pressable
+            onPress={() => setFiltroProjetos("ativos")}
+            className={`flex-1 items-center rounded-full px-3 py-2 ${
+              filtroProjetos === "ativos" ? "bg-blue-600" : ""
+            }`}
+          >
+            <Text
+              className={
+                filtroProjetos === "ativos"
+                  ? "text-xs font-semibold text-white"
+                  : "text-xs text-neutral-300"
+              }
+            >
+              PROJETOS ATIVOS
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setFiltroProjetos("concluidos")}
+            className={`flex-1 items-center rounded-full px-3 py-2 ${
+              filtroProjetos === "concluidos" ? "bg-blue-600" : ""
+            }`}
+          >
+            <Text
+              className={
+                filtroProjetos === "concluidos"
+                  ? "text-xs font-semibold text-white"
+                  : "text-xs text-neutral-300"
+              }
+            >
+              PROJETOS CONCLUÍDOS
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <ProjetoSection
+        projetos={projetosVisiveis}
+        tarefas={tarefas}
+        onPressProjeto={(id) =>
+          navigation.navigate("ProjetoDetalhe", { id })
+        }
+      />
+
+      {/* TAREFAS */}
+      <Text className="mb-4 text-center mt-2 text-xl font-semibold text-white border-y border-white/10 py-4">
+        Minhas Tarefas:
+      </Text>
+
+      {/* Filtro de tarefas */}
+      <View className="mb-2">
+        <View className="flex-row rounded-full bg-neutral-900 p-1">
+          <Pressable
+            onPress={() => setFiltroTarefas("ativas")}
+            className={`flex-1 items-center rounded-full px-3 py-2 ${
+              filtroTarefas === "ativas" ? "bg-blue-600" : ""
+            }`}
+          >
+            <Text
+              className={
+                filtroTarefas === "ativas"
+                  ? "text-xs font-semibold text-white"
+                  : "text-xs text-neutral-300"
+              }
+            >
+              TAREFAS ATIVAS
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setFiltroTarefas("concluidas")}
+            className={`flex-1 items-center rounded-full px-3 py-2 ${
+              filtroTarefas === "concluidas" ? "bg-blue-600" : ""
+            }`}
+          >
+            <Text
+              className={
+                filtroTarefas === "concluidas"
+                  ? "text-xs font-semibold text-white"
+                  : "text-xs text-neutral-300"
+              }
+            >
+              TAREFAS CONCLUÍDAS
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView className="flex-1 bg-neutral-950">
+      <AppHeader title="" reverse />
+
+      <FlatList
+        data={tarefasVisiveis}
+        keyExtractor={(item) => item.id}
+        renderItem={renderTarefa}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={{
+          paddingBottom: 120,
+        }}
+      />
 
       <FabMenu
         onNovaTarefa={handleNovaTarefa}

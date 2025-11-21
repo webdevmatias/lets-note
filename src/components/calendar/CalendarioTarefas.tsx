@@ -1,5 +1,3 @@
-// src/components/calendar/CalendarioTarefas.tsx
-
 import React, { useMemo } from "react";
 import { View, Text } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -75,7 +73,7 @@ const CalendarioTarefas: React.FC<CalendarioTarefasProps> = ({
   };
 
   return (
-    <View className="rounded-2xl p-3 mb-4">
+    <View className="rounded-2xl p-3">
       <Calendar
         // Data inicial/selecionada
         current={dataSelecionada}
