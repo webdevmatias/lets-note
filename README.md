@@ -1,4 +1,4 @@
-# mlist — Gerenciador de Tarefas e Projetos com Exportação CSV
+# LetsNote — Gerenciador de Tarefas e Projetos com Exportação CSV
 
 <p align="center">
   <img src="https://img.shields.io/badge/Expo-50.0.0-000020?style=for-the-badge&logo=expo" />
@@ -8,46 +8,12 @@
   <img src="https://img.shields.io/badge/PNPM-Fast-F69220?style=for-the-badge&logo=pnpm" />
 </p>
 
-O **mlist** é um aplicativo criado com **Expo + React Native + TypeScript + NativeWind**, projetado para organizar tarefas e projetos.
+O **LetsNote** é um aplicativo criado com **Expo + React Native + TypeScript + NativeWind**, projetado para organizar tarefas e projetos.
 Ele permite criar listas de tarefas, registrar projetos e **exportar tudo em CSV**, facilitando o compartilhamento e o backup.
 
 ---
 
-## 📂 Estrutura do Projeto
-
-```bash
-mlist/
-├─ .expo/
-├─ assets/
-│  ├─ images/
-│  └─ fonts/
-├─ src/
-│  ├─ screens/
-│  │  ├─ HomeScreen.tsx
-│  │  └─ EditScreen.tsx
-│  ├─ components/
-│  │  ├─ ui/              # Componentes genéricos (Button, Card, Input...)
-│  │  └─ layout/          # Estruturas de layout (Container, Header...)
-│  ├─ hooks/              # Hooks personalizados
-│  ├─ services/           # APIs, firebase e integrações
-│  ├─ store/              # Global state (Zustand / Context / Jotai)
-│  ├─ lib/                # Helpers e utilidades
-│  ├─ navigation/         # Navegação (Stacks / Tabs)
-│  ├─ types/              # Tipos globais
-│  └─ App.tsx             # Ponto de entrada REAL do app
-│
-├─ app.json
-├─ babel.config.js
-├─ metro.config.js
-├─ tailwind.config.js
-├─ tsconfig.json
-├─ package.json
-└─ nativewind-env.d.ts
-```
-
----
-
-## 🚀 Tecnologias Utilizadas
+## 🚀 Tecnologias Utilizadas:
 
 | Tecnologia                   | Descrição                             |
 | ---------------------------- | ------------------------------------- |
@@ -60,7 +26,7 @@ mlist/
 
 ---
 
-## 📋 Funcionalidades
+## 📋 Funcionalidades:
 
 ### ✔️ Tarefas
 
@@ -87,21 +53,21 @@ mlist/
 
 ---
 
-## 🛠️ Como Rodar o Projeto
+## 🛠️ Como Rodar o Projeto:
 
-### Instalar dependências
+### Instalar dependências:
 
 ```bash
 pnpm install
 ```
 
-### Iniciar o app
+### Iniciar o app:
 
 ```bash
 pnpm start
 ```
 
-### Abrir no Android (emulador ou físico)
+### Abrir no Android (emulador ou físico):
 
 ```bash
 pnpm run android
@@ -109,7 +75,7 @@ pnpm run android
 
 ---
 
-## 📤 Exportação CSV
+## 📤 Exportação CSV:
 
 É possível exportar:
 
@@ -121,7 +87,7 @@ O arquivo CSV pode ser **compartilhado** ou **salvo localmente**.
 
 ---
 
-## 📦 Gerar APK (Build)
+## 📦 Gerar APK (Build):
 
 ```bash
 npx expo install eas-cli
