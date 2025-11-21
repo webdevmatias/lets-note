@@ -75,17 +75,7 @@ const CalendarioTarefas: React.FC<CalendarioTarefasProps> = ({
   };
 
   return (
-    <View className="rounded-2xl border border-neutral-800 bg-neutral-900 p-3">
-      {/* Título */}
-      <View className="mb-2 flex-row items-center justify-between">
-        <Text className="text-sm font-semibold text-neutral-100">
-          Calendário de tarefas
-        </Text>
-        <Text className="text-xs text-neutral-400">
-          Toque em um dia para filtrar
-        </Text>
-      </View>
-
+    <View className="rounded-2xl p-3 mb-4">
       <Calendar
         // Data inicial/selecionada
         current={dataSelecionada}
@@ -109,10 +99,10 @@ const CalendarioTarefas: React.FC<CalendarioTarefasProps> = ({
         // Deixa a borda mais compacta
         style={{
           borderRadius: 16,
+        transform: [{ scale: 0.9 }],
         }}
       />
-
-      {/* Legenda simples */}
+{/* 
       <View className="mt-3 flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           <View className="h-2 w-2 rounded-full bg-[#A5B4FC]" />
@@ -123,7 +113,7 @@ const CalendarioTarefas: React.FC<CalendarioTarefasProps> = ({
           <View className="h-3 w-3 rounded-full bg-[#38BDF8]" />
           <Text className="text-xs text-neutral-400">Dia selecionado</Text>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };
