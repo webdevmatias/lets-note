@@ -2,7 +2,7 @@
   "expo": {
     "name": "LetsNote",
     "slug": "letsnote",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "backgroundColor": "#000",
     "primaryColor": "#000",
