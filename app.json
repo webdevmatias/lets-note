@@ -1,37 +1,51 @@
 {
   "expo": {
-    "name": "my-expo-app",
-    "slug": "my-expo-app",
-    "version": "1.0.0",
+    "name": "LetsNote",
+    "slug": "letsnote",
+    "version": "1.0.2",
+    "orientation": "portrait",
+    "backgroundColor": "#000",
+    "primaryColor": "#000",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
 
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.matias.letsnote",
+      "buildNumber": "1.0.0"
     },
 
-    "experiments": {
-      "tsconfigPaths": true
+    "android": {
+      "package": "com.matias.letsnote",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#000"
+      },
+      "androidStatusBar": {
+        "backgroundColor": "#111827",
+        "barStyle": "light-content",
+        "translucent": false
+      }
+    },
+
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
     },
 
     "plugins": [],
 
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-
-    "userInterfaceStyle": "light",
-
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+    "extra": {
+      "eas": {
+        "projectId": "75291234-9b6c-446a-80cd-3bf80c78ead7"
       }
     }
   }
